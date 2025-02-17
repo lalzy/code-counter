@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "eRKxygqeujI=",
+  "success": true,
+  "projectFilePath": "/home/skn/coding-projects/backend/code-counter/code-counter.csproj",
+  "expectedPackageFiles": [
+    "/home/skn/.nuget/packages/microsoft.netcore.app.ref/8.0.12/microsoft.netcore.app.ref.8.0.12.nupkg.sha512",
+    "/home/skn/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.12/microsoft.aspnetcore.app.ref.8.0.12.nupkg.sha512",
+    "/home/skn/.nuget/packages/microsoft.netcore.app.host.linux-x64/8.0.12/microsoft.netcore.app.host.linux-x64.8.0.12.nupkg.sha512"
+  ],
+  "logs": []
+}
