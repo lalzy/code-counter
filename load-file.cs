@@ -1,8 +1,8 @@
 using System.Reflection.PortableExecutable;
 
 class LoadProjectFiles{
-    public string ProjectPath;
-    List<string> FileTypes;
+    public string[] ProjectPaths;
+    List<string> FileTypes = new List<string>();
     List<string> FilterFolders = new List<string>();
     private List<FileInfo> Files = new List<FileInfo>();
     private List<string> Comments = new List<string>();
@@ -10,9 +10,8 @@ class LoadProjectFiles{
     private List<string> MultiLineCommentsEnd = new List<string>();
     
     
-    public LoadProjectFiles(string projectPath){
-        ProjectPath = projectPath;
-        FileTypes = new List<string>();
+    public LoadProjectFiles(string[] projectPaths){
+        ProjectPaths = projectPaths;
         
     }
     public void addFileType(string fileType){
@@ -63,23 +62,25 @@ class LoadProjectFiles{
 
 
     public void getAllFiles(){
-        DirectoryInfo projectDirectory = new DirectoryInfo(ProjectPath);
-        if(projectDirectory.Exists){
-            AddFiles(projectDirectory);
-            DirectoryInfo[] folders = projectDirectory.GetDirectories("*", SearchOption.AllDirectories
-            );
+        foreach(string ProjectPath in ProjectPaths){
+            DirectoryInfo projectDirectory = new DirectoryInfo(ProjectPath);
+            if(projectDirectory.Exists){
+                AddFiles(projectDirectory);
+                DirectoryInfo[] folders = projectDirectory.GetDirectories("*", SearchOption.AllDirectories
+                );
 
-            foreach(var folder in folders){
-                foreach(var filter in FilterFolders){
-                    if(!folder.FullName.ToLower().Contains(filter.ToLower())){
-                        AddFiles(folder);
+                foreach(var folder in folders){
+                    foreach(var filter in FilterFolders){
+                        if(!folder.FullName.ToLower().Contains(filter.ToLower())){
+                            AddFiles(folder);
+                        }
                     }
                 }
-            }
-        }else{
-            if(File.Exists(ProjectPath)){
-                Files.Add(new FileInfo(ProjectPath));
-                return;
+            }else{
+                if(File.Exists(ProjectPath)){
+                    Files.Add(new FileInfo(ProjectPath));
+                    return;
+                }
             }
         }
     }
