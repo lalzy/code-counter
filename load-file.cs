@@ -23,11 +23,11 @@ class LoadProjectFiles{
         FilterFolders.Add(folderName);
     }
 
-    public void SetCommentCharacters (char character){
+    public void AddCommentCharacters (char character){
         Comments.Add(character.ToString());
     }
 
-    public void SetCommentCharacters (string characters){
+    public void AddCommentCharacters (string characters){
         Comments.Add(characters);
     }
 

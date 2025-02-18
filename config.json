@@ -1,0 +1,9 @@
+{
+    "FilesToCount" : ["*.txt"],
+    "FoldersToIgnore" : [".git", "bin", "obj"],
+    "CommentSymbols" : [";"],
+    "multilineCommentSymbols" : [
+        ["#||", "||#"],
+        ["#|", "|#"]
+    ]
+}
