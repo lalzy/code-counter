@@ -10,16 +10,35 @@ class LoadProjectFiles{
     private List<string> MultiLineCommentsEnd = new List<string>();
     
     
-    public LoadProjectFiles(string[] projectPaths){
+    public LoadProjectFiles(string[] projectPaths, Config.Data configData){
         ProjectPaths = projectPaths;
-        
+        addFileType(configData);
+        AddFolderToIgnore(configData);
+        AddCommentCharacters(configData);
+        SetMultiLineComments(configData);
+    }
+    public void addFileType(Config.Data configData){
+        foreach(var file in configData.FilesToCount){
+            addFileType(file);
+        }
     }
     public void addFileType(string fileType){
         FileTypes.Add(fileType);
     }
 
+    public void AddFolderToIgnore (Config.Data configData){
+        foreach (var folder in configData.FoldersToIgnore){
+            AddFolderToIgnore(folder);
+        }
+    }
     public void AddFolderToIgnore(string folderName){
         FilterFolders.Add(folderName);
+    }
+
+    public void AddCommentCharacters (Config.Data configData){
+        foreach(var comment in configData.CommentSymbols){
+            AddCommentCharacters(comment);
+        }   
     }
 
     public void AddCommentCharacters (char character){
@@ -28,6 +47,12 @@ class LoadProjectFiles{
 
     public void AddCommentCharacters (string characters){
         Comments.Add(characters);
+    }
+
+    public void SetMultiLineComments (Config.Data configData){
+        foreach(var mCommentSymbolPair in configData.multilineCommentSymbols){
+            SetMultiLineComments(mCommentSymbolPair[0], mCommentSymbolPair[1]);
+        }
     }
 
     public void SetMultiLineComments (string start, string end){
