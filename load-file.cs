@@ -1,6 +1,7 @@
 class LoadProjectFiles{
     public string ProjectPath;
     List<string> FileTypes;
+    List<string> FilterFolders = new List<string>();
     private List<FileInfo> Files = new List<FileInfo>();
     private List<string> Comments = new List<string>();
     private List<string> MultiLineCommentsStart = new List<string>();
@@ -14,6 +15,10 @@ class LoadProjectFiles{
     }
     public void addFileType(string fileType){
         FileTypes.Add(fileType);
+    }
+
+    public void AddFolderToIgnore(string folderName){
+        FilterFolders.Add(folderName);
     }
 
     public void SetCommentCharacters (char character){
@@ -31,47 +36,80 @@ class LoadProjectFiles{
         Comments.Add(end);
     }
 
-    private bool CountLine(string line){
+    private (bool, int) CountLine(string line, int comments){
         foreach(string comment in Comments){
             if(line.IndexOf(comment) == 0){
-                return false;
+                return (false, comments);
+            }else if(line.IndexOf(comment) > 0){
+                return (true, comments + 1);
             }
         }
-
-        return true;
+        return (true, comments);
     }
 
-    public void getAllFiles(){
-        DirectoryInfo projectDirectory = new DirectoryInfo(ProjectPath);
+    public void AddFiles (DirectoryInfo folder){
         foreach(string fileType in FileTypes){
-            FileInfo[] files = projectDirectory.GetFiles(fileType);
+            FileInfo[] files = folder.GetFiles(fileType);
             if(files.Length > 0){
                 foreach(FileInfo file in files){
                     Files.Add(file);
                 }
-            } 
+            }
         }
     }
-    private bool checkForMultiComment(bool multilineComment, string line){
+
+
+
+    public void getAllFiles(){
+        DirectoryInfo projectDirectory = new DirectoryInfo(ProjectPath);
+        AddFiles(projectDirectory);
+        DirectoryInfo[] folders = projectDirectory.GetDirectories("*", SearchOption.AllDirectories
+        );
+
+        foreach(var folder in folders){
+            foreach(var filter in FilterFolders){
+                if(!folder.FullName.ToLower().Contains(filter.ToLower())){
+                    AddFiles(folder);
+                }
+            }
+        }
+    }
+
+    private (bool, string, int) checkForMultiComment(bool multilineComment, string line, int comments){
         if(multilineComment){
             foreach(string commentCharacters in MultiLineCommentsEnd){
-                if(line.IndexOf(commentCharacters) > 0){
-                    return false;
+                if(line.IndexOf(commentCharacters) >= 0){
+                    return (false,line.Replace(commentCharacters, ""), ++comments);
                 }
             }
-            return true;
+            return (true, line, ++comments);
         }else{
-            foreach(string commentCharacters in MultiLineCommentsEnd){
-                if(line.IndexOf(commentCharacters) > 0){
-                    return true;
+            foreach(string commentCharacters in MultiLineCommentsStart){
+                if(line.IndexOf(commentCharacters) >= 0){
+                    return (true,line.Replace(commentCharacters, ""), ++comments);
                 }
             }
-            return false;
+            return (false, line, comments);
         }
     }
-    public int getLines(){
-        int lines = 0;
+
+    private  const int CODELINE = 0;
+    private  const int WHITESPACE = 1;
+    private  const int COMMENTED = 2;
+    private  const int TOTALLINES = 3;
+
+    public void printOut(){
+        int[] lines = getLines();
+        Console.WriteLine($"WhiteSpaces:{lines[WHITESPACE]}\n" + 
+        $"Commented Lines:{lines[COMMENTED]}\nCode Lines: {lines[CODELINE]}\n"+
+        "------------------------\n"+
+        $"Total Lines:{lines[TOTALLINES]}");
+    }
+
+    public int[] getLines(){
+        int codeLines = 0;
         int emptyLineCount = 0; // continue caused my visualCode to freeze.
+        int comments = 0;
         bool multilineComment = false;
         foreach (FileInfo file in Files){
             String? line = "";
@@ -80,13 +118,16 @@ class LoadProjectFiles{
                 line = sr.ReadLine();
                 while (line != null){
                     line = line.Trim(' ');
-                    if(line.Length == 0){
-                        emptyLineCount++;
-                    }
-                    //multilineComment = checkForMultiComment(multilineComment, line);
-                    if(!multilineComment){ 
-                        if(CountLine(line)){
-                            lines++;
+                    (multilineComment, line, comments) = checkForMultiComment(multilineComment, line, comments);
+                    bool countLine;
+                    (countLine, comments) = CountLine(line, comments);
+                    if(!multilineComment){
+                        if(line.Length == 0){
+                            emptyLineCount++;
+                        }else if(countLine){
+                            codeLines++;
+                        }else{
+                            comments++;
                         }
                     }
                     line = sr.ReadLine();
@@ -95,6 +136,7 @@ class LoadProjectFiles{
 
             }catch(Exception e){Console.WriteLine(e);}
         }
-        return lines - emptyLineCount;
+        int[] AllLines = [codeLines, emptyLineCount, comments, (codeLines + emptyLineCount + comments)];
+        return AllLines;
     }
 }

@@ -1,10 +1,13 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 LoadProjectFiles lpf = new LoadProjectFiles("/home/skn/coding-projects/common-lisp/yggdrasil2");
-lpf.addFileType("*.txt");
-lpf.addFileType("*.lisp");
-lpf.addFileType("*.asd");
+// lpf.addFileType("*.lisp");
+// lpf.addFileType("*.asd");
+lpf.addFileType("*.tat");
+lpf.AddFolderToIgnore(".git");
 lpf.SetCommentCharacters(';');
-lpf.SetMultiLineComments("|#", "#|");
+lpf.SetMultiLineComments("#||", "||#");
+lpf.SetMultiLineComments("#|", "|#");
 lpf.getAllFiles();
-Console.WriteLine($"Line count: {lpf.getLines()}");
+// Console.WriteLine($"Line count: {lpf.getLines()}");
+lpf.printOut();
