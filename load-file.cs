@@ -64,15 +64,22 @@ class LoadProjectFiles{
 
     public void getAllFiles(){
         DirectoryInfo projectDirectory = new DirectoryInfo(ProjectPath);
-        AddFiles(projectDirectory);
-        DirectoryInfo[] folders = projectDirectory.GetDirectories("*", SearchOption.AllDirectories
-        );
+        if(projectDirectory.Exists){
+            AddFiles(projectDirectory);
+            DirectoryInfo[] folders = projectDirectory.GetDirectories("*", SearchOption.AllDirectories
+            );
 
-        foreach(var folder in folders){
-            foreach(var filter in FilterFolders){
-                if(!folder.FullName.ToLower().Contains(filter.ToLower())){
-                    AddFiles(folder);
+            foreach(var folder in folders){
+                foreach(var filter in FilterFolders){
+                    if(!folder.FullName.ToLower().Contains(filter.ToLower())){
+                        AddFiles(folder);
+                    }
                 }
+            }
+        }else{
+            if(File.Exists(ProjectPath)){
+                Files.Add(new FileInfo(ProjectPath));
+                return;
             }
         }
     }
