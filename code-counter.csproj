@@ -5,6 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>code_counter</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
+    <StartupObject>CodeCounter.Program</StartupObject>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

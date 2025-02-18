@@ -1,3 +1,5 @@
+using System.Reflection.PortableExecutable;
+
 class LoadProjectFiles{
     public string ProjectPath;
     List<string> FileTypes;
@@ -79,9 +81,11 @@ class LoadProjectFiles{
         if(multilineComment){
             foreach(string commentCharacters in MultiLineCommentsEnd){
                 if(line.IndexOf(commentCharacters) == 0){
-                    return (false,line.Replace(commentCharacters, ""), comments);
+                    string subString = line.Replace(commentCharacters, "");
+                    return (false,subString, comments);
                 }else{
-                    return (false,line.Replace(commentCharacters, ""), ++comments);
+                    string subString = line.Substring(line.IndexOf(commentCharacters));
+                    return (false,subString, comments);
                 }
             }
             return (true, line, ++comments);
@@ -110,7 +114,7 @@ class LoadProjectFiles{
 
     public int[] getLines(){
         int codeLines = 0;
-        int emptyLineCount = 0; // continue caused my visualCode to freeze.
+        int emptyLineCount = 0;
         int comments = 0;
         bool multilineComment = false;
         foreach (FileInfo file in Files){
