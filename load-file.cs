@@ -78,7 +78,9 @@ class LoadProjectFiles{
     private (bool, string, int) checkForMultiComment(bool multilineComment, string line, int comments){
         if(multilineComment){
             foreach(string commentCharacters in MultiLineCommentsEnd){
-                if(line.IndexOf(commentCharacters) >= 0){
+                if(line.IndexOf(commentCharacters) == 0){
+                    return (false,line.Replace(commentCharacters, ""), comments);
+                }else{
                     return (false,line.Replace(commentCharacters, ""), ++comments);
                 }
             }
