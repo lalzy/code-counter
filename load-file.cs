@@ -21,6 +21,7 @@ class LoadProjectFiles{
         AddCommentCharacters(configData);
         SetMultiLineComments(configData);
     }
+    
     /// <summary>
     /// Goes through the file (usually *.extention) of the config object, and then sends it to the AddFileType overload.
     /// </summary>
@@ -53,7 +54,7 @@ class LoadProjectFiles{
     /// <summary>
     /// Adds the chosen folder name (string) to the filterFolders list.
     /// </summary>
-    /// <param name="folderName">Nase as string to the folder to filter</param>
+    /// <param name="folderName">Name as string to the folder to filter</param>
     public void AddFolderToIgnore(string folderName){
         _FilterFolders.Add(folderName);
     }
@@ -159,7 +160,10 @@ class LoadProjectFiles{
 
                 foreach(var folder in folders){
                     foreach(var filter in _FilterFolders){
-                        if(!folder.FullName.ToLower().Contains(filter.ToLower())){
+                        string lowerFolderName = folder.FullName.ToLower();
+                        string lowerFilterName = filter.ToLower();
+                        
+                        if(!lowerFolderName.Contains(lowerFilterName)){
                             AddFiles(folder);
                         }
                     }
@@ -217,9 +221,10 @@ class LoadProjectFiles{
     public void PrintOut(){
         int[] lines = GetLines();
         Console.WriteLine($"WhiteSpaces:{lines[WHITESPACE]}\n" + 
-        $"Commented Lines:{lines[COMMENTED]}\nCode Lines: {lines[CODELINE]}\n"+
-        "------------------------\n"+
-        $"Total Lines:{lines[TOTALLINES]}");
+                          $"Commented Lines:{lines[COMMENTED]}\n"+
+                          $"Code Lines: {lines[CODELINE]}\n"+
+                          "------------------------\n"+
+                          $"Total Lines:{lines[TOTALLINES]}");
     }
 
     /// <summary>
@@ -234,27 +239,31 @@ class LoadProjectFiles{
         foreach (FileInfo file in _Files){
             String? line = "";
             try{
-                StreamReader sr = new StreamReader(file.ToString());
-                line = sr.ReadLine();
-                while (line != null){
-                    line = line.Trim(' ');
-                    (multilineComment, line, comments) = CheckForMultiComment(multilineComment, line, comments);
-                    bool countLine;
-                    (countLine, comments) = CountLine(line, comments);
-                    if(!multilineComment){
-                        if(line.Length == 0){
-                            emptyLineCount++;
-                        }else if(countLine){
-                            codeLines++;
-                        }else{
-                            comments++;
-                        }
-                    }
+                using (StreamReader sr = new StreamReader(file.ToString())) {
                     line = sr.ReadLine();
+                    while (line != null){
+                        line = line.Trim(' ');
+                        (multilineComment, line, comments) = CheckForMultiComment(multilineComment, line, comments);
+                        bool countLine;
+                        (countLine, comments) = CountLine(line, comments);
+                        if(!multilineComment){
+                            if(line.Length == 0){
+                                emptyLineCount++;
+                            }else if(countLine){
+                                codeLines++;
+                            }else{
+                                comments++;
+                            }
+                        }
+                        line = sr.ReadLine();
+                    }
                 }
-                sr.Close();
-
-            }catch(Exception e){Console.WriteLine(e);}
+            }catch (IOException e) {
+                Console.WriteLine($"File error: {e.Message}");
+            }
+            catch (UnauthorizedAccessException e) {
+                Console.WriteLine($"Access error: {e.Message}");
+            }
         }
         int[] AllLines = [codeLines, emptyLineCount, comments, (codeLines + emptyLineCount + comments)];
         return AllLines;
