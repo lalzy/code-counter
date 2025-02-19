@@ -137,11 +137,8 @@ class LoadProjectFiles{
     /// <param name="folder">Folder to look through for files</param>
     public void AddFiles (DirectoryInfo folder){
         foreach(string fileType in _FileTypes){
-            FileInfo[] files = folder.GetFiles(fileType);
-            if(files.Length > 0){
-                foreach(FileInfo file in files){
-                    _Files.Add(file);
-                }
+            foreach (FileInfo file in folder.GetFiles(fileType)){
+                _Files.Add(file);
             }
         }
     }
@@ -239,7 +236,7 @@ class LoadProjectFiles{
         foreach (FileInfo file in _Files){
             String? line = "";
             try{
-                using (StreamReader sr = new StreamReader(file.ToString())) {
+                using (StreamReader sr = new StreamReader(file.FullName)) {
                     line = sr.ReadLine();
                     while (line != null){
                         line = line.Trim(' ');
