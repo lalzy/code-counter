@@ -10,8 +10,8 @@ namespace CodeCounter {
             }
             LoadProjectFiles lpf = new LoadProjectFiles(args, data);
 
-            lpf.getAllFiles();
-            lpf.printOut();
+            lpf.GetAllFiles();
+            lpf.PrintOut();
         }
     }
     

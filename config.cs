@@ -10,13 +10,17 @@ public class Config {
         public List<string> CommentSymbols {get;set;} = new List<string>();
         public List<List<string>> multilineCommentSymbols {get;set;} = new List<List<string>>();
     };
+    /// <summary>
+    /// Laster opp data fra Json fil/object.
+    /// </summary>
+    /// <exception cref="Exception"></exception>
     public Config(){
         // Console.WriteLine(File.ReadAllText("config.json"));
         string jsonString = File.ReadAllText("config.json");
 
         DataObject = JsonSerializer.Deserialize<Data>(jsonString);
         if(DataObject == null){
-            throw new Exception("Failed to do json.");
+            throw new Exception("Failed to load the json.");
         }
     }
 }
