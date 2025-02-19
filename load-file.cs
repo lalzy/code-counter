@@ -237,9 +237,15 @@ class LoadProjectFiles{
         string? line = sr.ReadLine();
         while (line != null){
             line = line.Trim(' ');
+
+            // Checks if we're within, or starting a multiline comment
             (multilineComment, line, comments) = CheckForMultiComment(multilineComment, line, comments);
+
+            // Check if the current line should be counted as code (such as if multi-line comment is on same line as valid-code).
             bool countLine;
             (countLine, comments) = CountLine(line, comments);
+
+            // If it's an multi-line comment, we skip this (as it's commented).
             if(!multilineComment){
                 if(line.Length == 0){
                     emptyLineCount++;
