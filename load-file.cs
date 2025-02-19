@@ -225,35 +225,46 @@ class LoadProjectFiles{
     }
 
     /// <summary>
-    /// Goes through all the files, and read their individual lines, and check if they should be counted or not.
+    /// Goes through the file counting up the lines.
     /// </summary>
-    /// <returns>Array of lines countet.</returns>
-    public int[] GetLines(){
+    /// <param name="sr">The file to be read</param>
+    /// <returns>Array of lines counted.</returns>
+    private int[] ReadLines(StreamReader sr){
         int codeLines = 0;
         int emptyLineCount = 0;
         int comments = 0;
         bool multilineComment = false;
+        string? line = sr.ReadLine();
+        while (line != null){
+            line = line.Trim(' ');
+            (multilineComment, line, comments) = CheckForMultiComment(multilineComment, line, comments);
+            bool countLine;
+            (countLine, comments) = CountLine(line, comments);
+            if(!multilineComment){
+                if(line.Length == 0){
+                    emptyLineCount++;
+                }else if(countLine){
+                    codeLines++;
+                }else{
+                    comments++;
+                }
+            }
+            line = sr.ReadLine();
+        }
+
+        return [codeLines, emptyLineCount, comments, (codeLines + emptyLineCount + comments)];
+    }
+    
+    /// <summary>
+    /// Goes through and open the files for reading, then pass it to our ReadLine function.
+    /// </summary>
+    /// <returns>Array of lines counted.</returns>
+    public int[] GetLines(){
+        int[] allLines = [];
         foreach (FileInfo file in _Files){
-            String? line = "";
             try{
                 using (StreamReader sr = new StreamReader(file.FullName)) {
-                    line = sr.ReadLine();
-                    while (line != null){
-                        line = line.Trim(' ');
-                        (multilineComment, line, comments) = CheckForMultiComment(multilineComment, line, comments);
-                        bool countLine;
-                        (countLine, comments) = CountLine(line, comments);
-                        if(!multilineComment){
-                            if(line.Length == 0){
-                                emptyLineCount++;
-                            }else if(countLine){
-                                codeLines++;
-                            }else{
-                                comments++;
-                            }
-                        }
-                        line = sr.ReadLine();
-                    }
+                    allLines = ReadLines(sr);
                 }
             }catch (IOException e) {
                 Console.WriteLine($"File error: {e.Message}");
@@ -262,7 +273,6 @@ class LoadProjectFiles{
                 Console.WriteLine($"Access error: {e.Message}");
             }
         }
-        int[] AllLines = [codeLines, emptyLineCount, comments, (codeLines + emptyLineCount + comments)];
-        return AllLines;
+        return allLines;
     }
 }
