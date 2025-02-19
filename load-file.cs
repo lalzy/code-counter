@@ -23,7 +23,7 @@ class LoadProjectFiles{
     }
     
     /// <summary>
-    /// Goes through the file (usually *.extention) of the config object, and then sends it to the AddFileType overload.
+    /// Goes through the file (usually *.extension) of the config object, and then sends it to the AddFileType overload.
     /// </summary>
     /// <param name="configData">Initialized config object that contains the .json config data</param>
     public void AddFileType(Config.Data configData){
@@ -32,9 +32,9 @@ class LoadProjectFiles{
         }
     }
     /// <summary>
-    /// Adds the file to list of files that'll be counted.
+    /// Adds a file type to the list of counted files.
     /// </summary>
-    /// <param name="fileType">Name + extention of the file to count as string (*.extention also work for all).</param>
+    /// <param name="fileType">Name + extension of the file to count as string (*.extension also work for all).</param>
     public void AddFileType(string fileType){
         _FileTypes.Add(fileType);
     }
@@ -43,7 +43,7 @@ class LoadProjectFiles{
     /// Goes through the folders of the config object, 
     /// and then sends it to the AddFolderToIgnore overload.
     /// </summary>
-    /// <param name="configData"></param>
+    /// <param name="configData">Initialized config object that contains the .json config data</param>
     public void AddFolderToIgnore (Config.Data configData){
         foreach (var folder in configData.FoldersToIgnore){
             AddFolderToIgnore(folder);
@@ -64,7 +64,7 @@ class LoadProjectFiles{
     /// Goes through the commentSymbols of the config object, 
     /// and then sends it to the addCommentCharacters list overload.
     /// </summary>
-    /// <param name="configData"></param>
+    /// <param name="configData">Initialized config object that contains the .json config data</param>
     public void AddCommentCharacters (Config.Data configData){
         foreach(var comment in configData.CommentSymbols){
             AddCommentCharacters(comment);
@@ -92,7 +92,7 @@ class LoadProjectFiles{
     /// Goes through the multilineCommentPair of the config object, 
     /// and then filter and sends it to the SetMultiLineComments overload.
     /// </summary>
-    /// <param name="configData"></param>
+    /// <param name="configData">Initialized config object that contains the .json config data</param>
     public void SetMultiLineComments (Config.Data configData){
         foreach(var mCommentSymbolPair in configData.multilineCommentSymbols){
             SetMultiLineComments(mCommentSymbolPair[0], mCommentSymbolPair[1]);
@@ -115,7 +115,7 @@ class LoadProjectFiles{
 
     /// <summary>
     /// Check if the current-line is a commented out line, or a code-line.
-    /// if it's a commented out line, increment comments by 1.
+    /// If it's a commented-out line, increment the comment count by 1.
     /// </summary>
     /// <param name="line">Current line that's been read up</param>
     /// <param name="comments">Counter for content-lines.</param>
@@ -175,10 +175,10 @@ class LoadProjectFiles{
     }
 
     /// <summary>
-    /// Checks if the line has a stat, or end multi-comment symbol, then we check if there's code-lines left, if not.
+    /// Checks if the line has a start, or end multi-comment symbol, then we check if there's code-lines left, if not.
     /// We increment the comments counter.
     /// </summary>
-    /// <param name="multilineComment">Wether or not we're looking for an 'end' symbol</param>
+    /// <param name="multilineComment">Whether or not we're looking for an 'end' symbol</param>
     /// <param name="line">Current line</param>
     /// <param name="comments">Counter of how many comment-lins have been read.</param>
     /// <returns></returns>
