@@ -229,36 +229,36 @@ class LoadProjectFiles{
     /// </summary>
     /// <param name="sr">The file to be read</param>
     /// <returns>Array of lines counted.</returns>
-    private int[] ReadLines(StreamReader sr){
-        int codeLines = 0;
-        int emptyLineCount = 0;
-        int comments = 0;
+    private int[] ReadLines(StreamReader sr, int[] allLines){
+        // int codeLines = 0;
+        // int emptyLineCount = 0;
+        // int comments = 0;
         bool multilineComment = false;
         string? line = sr.ReadLine();
         while (line != null){
             line = line.Trim(' ');
 
             // Checks if we're within, or starting a multiline comment
-            (multilineComment, line, comments) = CheckForMultiComment(multilineComment, line, comments);
+            (multilineComment, line, allLines[COMMENTED]) = CheckForMultiComment(multilineComment, line, allLines[COMMENTED]);
 
             // Check if the current line should be counted as code (such as if multi-line comment is on same line as valid-code).
             bool countLine;
-            (countLine, comments) = CountLine(line, comments);
+            (countLine, allLines[COMMENTED]) = CountLine(line, allLines[COMMENTED]);
 
             // If it's an multi-line comment, we skip this (as it's commented).
             if(!multilineComment){
                 if(line.Length == 0){
-                    emptyLineCount++;
+                    allLines[WHITESPACE]++;
                 }else if(countLine){
-                    codeLines++;
+                    allLines[CODELINE]++;
                 }else{
-                    comments++;
+                    allLines[COMMENTED]++;
                 }
             }
             line = sr.ReadLine();
         }
 
-        return [codeLines, emptyLineCount, comments, (codeLines + emptyLineCount + comments)];
+        return allLines;
     }
     
     /// <summary>
@@ -266,11 +266,11 @@ class LoadProjectFiles{
     /// </summary>
     /// <returns>Array of lines counted.</returns>
     public int[] GetLines(){
-        int[] allLines = [];
+        int[] allLines = new int[5];
         foreach (FileInfo file in _Files){
             try{
                 using (StreamReader sr = new StreamReader(file.FullName)) {
-                    allLines = ReadLines(sr);
+                    allLines = ReadLines(sr, allLines);
                 }
             }catch (IOException e) {
                 Console.WriteLine($"File error: {e.Message}");
