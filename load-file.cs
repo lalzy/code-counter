@@ -115,6 +115,32 @@ class LoadProjectFiles{
     }
 
     /// <summary>
+    /// Remove the string from a string-line. This is to ensure any commented line within the string is ignored.
+    /// </summary>
+    /// <param name="line"></param>
+    /// <param name="commentChar"></param>
+    /// <returns></returns>
+    private string skipStringLine (string line, char commentChar){
+        if(line.Contains(commentChar)){
+            bool stringChar = false;
+            string newLine = "";
+            for (int i = 0 ; i < line.Length ; i++){
+                if(line[i] == commentChar){
+                    // Skip escape character
+                    if(line[i - 1] == '\\'){
+                        continue;
+                    }
+                    stringChar = !stringChar;
+                }else if(!stringChar){
+                    newLine += line[i];
+                }
+            }
+            line = newLine;
+        }
+        return line;
+    }
+
+    /// <summary>
     /// Check if the current-line is a commented out line (entire line is commented), or a code-line (may contain a comment, but also contains code).
     /// If it's a commented-out line, increment the comment count by 1.
     /// </summary>
@@ -122,6 +148,7 @@ class LoadProjectFiles{
     /// <param name="comments">Counter for content-lines.</param>
     /// <returns></returns>
     private (bool, int) CountLine(string line, int comments){
+        line = skipStringLine(line, '"');
         foreach(string comment in _Comments){
             if(line.IndexOf(comment) == 0){
                 return (false, comments);
