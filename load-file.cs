@@ -272,7 +272,6 @@ class LoadProjectFiles{
     private  const int CODELINE = 0;
     private  const int WHITESPACE = 1;
     private  const int COMMENTED = 2;
-    private  const int TOTALLINES = 3;
 
     /// <summary>
     /// Prints out the counted lines.
@@ -283,7 +282,7 @@ class LoadProjectFiles{
                           $"Commented Lines:{lines[COMMENTED]}\n"+
                           $"Code Lines: {lines[CODELINE]}\n"+
                           "------------------------\n"+
-                          $"Total Lines:{lines[TOTALLINES]}");
+                          $"Total Lines:{lines[WHITESPACE] + lines[COMMENTED] + lines[CODELINE]}");
     }
 
     /// <summary>
@@ -295,7 +294,6 @@ class LoadProjectFiles{
         List<string> multiLineCharacters = new List<string>();
         char? storedChar = null;
         string? line = sr.ReadLine();
-        int count = 1;
         while (line != null){
             line = line.Trim(' ');
             // Checks if we're within, or starting a multiline comment
@@ -304,20 +302,17 @@ class LoadProjectFiles{
             // Check if the current line should be counted as code (such as if multi-line comment is on same line as valid-code).
             bool countLine;
             (countLine, allLines[COMMENTED], storedChar) = CountLine(line, allLines[COMMENTED], storedChar);
-
+            if(line.Length == 0){
+                allLines[WHITESPACE]++;
+            }
             // If it's an multi-line comment, we skip this (as it's commented).
-            if(multiLineCharacters.Count == 0){
-                if(line.Length == 0){
-                    allLines[WHITESPACE]++;
-                }else if(countLine){
-                    if(count == 8)
-                    Console.WriteLine(line);
+            else if(multiLineCharacters.Count == 0){
+                if(countLine){
                     allLines[CODELINE]++;
                 }else{
                     allLines[COMMENTED]++;
                 }
             }
-            count++;
             line = sr.ReadLine();
         }
 
