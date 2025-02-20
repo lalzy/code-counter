@@ -168,13 +168,14 @@ class LoadProjectFiles{
     /// multiLineCharacters has the character added
     // comment-count is incremented if there is no code.<string></returns>
     private (List<string>, int) StartMultiLineComment(List<string> multiLineCharacters, string line, int commentCount){
-      for(int i = 0; i < _MultiLineCommentsStart.Count ; i++){
+        if(line.Length == 0){
+            return (multiLineCharacters, ++commentCount);
+        }
+        for(int i = 0; i < _MultiLineCommentsStart.Count ; i++){
             if (line.Contains(_MultiLineCommentsStart[i])){
                 multiLineCharacters.Add(_MultiLineCommentsEnd[i]);
             }
         }
-        if(line.Length == 0)
-            commentCount++;
         return (multiLineCharacters, commentCount);
     }
 
@@ -198,9 +199,9 @@ class LoadProjectFiles{
                     multiLineCharacters.Remove(multiLineCharacters[i]);
                 }
             }
-        }
-        if(line.Length == 0){
-            commentCount++;
+            if(line.Length == 0){
+                return (multiLineCharacters, line, ++commentCount);
+            }
         }
         
         return (multiLineCharacters, line, commentCount);
