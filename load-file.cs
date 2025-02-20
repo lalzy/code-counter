@@ -1,5 +1,6 @@
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 class LoadProjectFiles{
     private string[] _ProjectPaths;
@@ -227,19 +228,19 @@ class LoadProjectFiles{
     private string skipStringLine (string line, char stringChar){
         if(line.Contains(stringChar)){
             bool isString = false;
-            string newLine = "";
+            StringBuilder newLine = new StringBuilder();
             for (int i = 0 ; i < line.Length ; i++){
                 if(line[i] == stringChar){
                     // Skip escape character
-                    if(line[i - 1] == '\\'){
+                    if(i > 0 && line[i - 1] == '\\'){
                         continue;
                     }
                     isString = !isString;
                 }else if(!isString){
-                    newLine += line[i];
+                    newLine.Append(line[i]);
                 }
             }
-            line = newLine;
+            line = newLine.ToString();
         }
         return line;
     }
