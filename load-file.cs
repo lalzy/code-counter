@@ -225,9 +225,8 @@ class LoadProjectFiles{
     /// <param name="line"></param>
     /// <param name="commentChar"></param>
     /// <returns>modified line where the string is removed (but the string-char is kept).</returns>
-    private string skipStringLine (string line, char stringChar){
+    private (char?, string) skipStringLine (string line, char stringChar, char? storedChar){
         if(line.Contains(stringChar)){
-            bool isString = false;
             StringBuilder newLine = new StringBuilder();
             for (int i = 0 ; i < line.Length ; i++){
                 if(line[i] == stringChar){
@@ -235,14 +234,14 @@ class LoadProjectFiles{
                     if(i > 0 && line[i - 1] == '\\'){
                         continue;
                     }
-                    isString = !isString;
-                }else if(!isString){
+                    storedChar = storedChar == null ? storedChar : null;
+                }else if(storedChar != null){
                     newLine.Append(line[i]);
                 }
             }
             line = newLine.ToString();
         }
-        return line;
+        return (storedChar, line);
     }
 
     /// <summary>
@@ -252,16 +251,16 @@ class LoadProjectFiles{
     /// <param name="line">Current line that's been read up</param>
     /// <param name="commentCount">Counter for content-lines.</param>
     /// <returns>Wether or not to count the line (boolean), and the commentsCount</returns>
-    private (bool, int) CountLine(string line, int commentCount){
-        line = skipStringLine(line, '"');
+    private (bool, int, char?) CountLine(string line, int commentCount, char? storedChar){
+        (storedChar, line) = skipStringLine(line, '"', storedChar);
         foreach(string comment in _Comments){
             if(line.IndexOf(comment) == 0){
-                return (false, commentCount);
-            }else if(line.IndexOf(comment) > 0){
-                return (true, commentCount + 1);
+                return (false, commentCount, storedChar);
+            }else if(line.IndexOf(comment) > 0 && storedChar == null){
+                return (true, commentCount, storedChar);
             }
         }
-        return (true, commentCount);
+        return (true, commentCount, storedChar);
     }
 
     /// <summary>
@@ -291,6 +290,7 @@ class LoadProjectFiles{
     /// <returns>Array of lines counted.</returns>
     private int[] ReadLines(StreamReader sr, int[] allLines){
         List<string> multiLineCharacters = new List<string>();
+        char? storedChar = null;
         string? line = sr.ReadLine();
         while (line != null){
             line = line.Trim(' ');
@@ -300,7 +300,7 @@ class LoadProjectFiles{
 
             // Check if the current line should be counted as code (such as if multi-line comment is on same line as valid-code).
             bool countLine;
-            (countLine, allLines[COMMENTED]) = CountLine(line, allLines[COMMENTED]);
+            (countLine, allLines[COMMENTED], storedChar) = CountLine(line, allLines[COMMENTED], storedChar);
 
             // If it's an multi-line comment, we skip this (as it's commented).
             if(multiLineCharacters.Count == 0){
@@ -308,6 +308,9 @@ class LoadProjectFiles{
                     allLines[WHITESPACE]++;
                 }else if(countLine){
                     allLines[CODELINE]++;
+                }else if(storedChar == null){
+                    // Remove after finding the bug adding +1 comment-line.
+                    Console.WriteLine($"hey -{line}");
                 }else{
                     allLines[COMMENTED]++;
                 }
