@@ -111,8 +111,8 @@ class LoadProjectFiles{
     public void SetMultiLineComments (string start, string end){
         _MultiLineCommentsStart.Add(start);
         _MultiLineCommentsEnd.Add(end);
-        _Comments.Add(start); // Ensure we don't skip if code is on same line
-        _Comments.Add(end);
+        // _Comments.Add(start); // Ensure we don't skip if code is on same line
+        // _Comments.Add(end);
     }
 
     /// <summary>
@@ -193,14 +193,16 @@ class LoadProjectFiles{
         if(multiLineCharacters.Count > 0){
             for (int i = 0; i < multiLineCharacters.Count ; i++){
                 if (line.Contains(multiLineCharacters[i])){
-                    line = line.Substring(line.IndexOf(multiLineCharacters[i]));
-                    multiLineCharacters.RemoveAt(i--); // restart the loop at the same position.
-                    continue;
+                    int index = line.IndexOf(multiLineCharacters[i]);
+                    line = line.Substring(index > 0 ? index+multiLineCharacters[i].Length : index);
+                    multiLineCharacters.Remove(multiLineCharacters[i]);
                 }
             }
         }
-        if(line.Length == 0)
+        if(line.Length == 0){
             commentCount++;
+        }
+        
         return (multiLineCharacters, line, commentCount);
     }
 
@@ -292,9 +294,9 @@ class LoadProjectFiles{
         List<string> multiLineCharacters = new List<string>();
         char? storedChar = null;
         string? line = sr.ReadLine();
+        int count = 1;
         while (line != null){
             line = line.Trim(' ');
-
             // Checks if we're within, or starting a multiline comment
             (multiLineCharacters, line, allLines[COMMENTED]) = CheckForMultiComment(multiLineCharacters, line, allLines[COMMENTED]);
 
@@ -307,14 +309,14 @@ class LoadProjectFiles{
                 if(line.Length == 0){
                     allLines[WHITESPACE]++;
                 }else if(countLine){
+                    if(count == 8)
+                    Console.WriteLine(line);
                     allLines[CODELINE]++;
-                }else if(storedChar == null){
-                    // Remove after finding the bug adding +1 comment-line.
-                    Console.WriteLine($"hey -{line}");
                 }else{
                     allLines[COMMENTED]++;
                 }
             }
+            count++;
             line = sr.ReadLine();
         }
 

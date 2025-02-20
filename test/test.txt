@@ -1,11 +1,11 @@
 a
-#|| b
+#| b
 
-#||
+#|
 s d
-||#
+|#
 
-f ||#
+f |#
 ; as
 
 ssdsd "string test ;
