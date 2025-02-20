@@ -115,51 +115,6 @@ class LoadProjectFiles{
     }
 
     /// <summary>
-    /// Remove the string from a string-line. This is to ensure any commented line within the string is ignored.
-    /// </summary>
-    /// <param name="line"></param>
-    /// <param name="commentChar"></param>
-    /// <returns></returns>
-    private string skipStringLine (string line, char commentChar){
-        if(line.Contains(commentChar)){
-            bool stringChar = false;
-            string newLine = "";
-            for (int i = 0 ; i < line.Length ; i++){
-                if(line[i] == commentChar){
-                    // Skip escape character
-                    if(line[i - 1] == '\\'){
-                        continue;
-                    }
-                    stringChar = !stringChar;
-                }else if(!stringChar){
-                    newLine += line[i];
-                }
-            }
-            line = newLine;
-        }
-        return line;
-    }
-
-    /// <summary>
-    /// Check if the current-line is a commented out line (entire line is commented), or a code-line (may contain a comment, but also contains code).
-    /// If it's a commented-out line, increment the comment count by 1.
-    /// </summary>
-    /// <param name="line">Current line that's been read up</param>
-    /// <param name="comments">Counter for content-lines.</param>
-    /// <returns></returns>
-    private (bool, int) CountLine(string line, int comments){
-        line = skipStringLine(line, '"');
-        foreach(string comment in _Comments){
-            if(line.IndexOf(comment) == 0){
-                return (false, comments);
-            }else if(line.IndexOf(comment) > 0){
-                return (true, comments + 1);
-            }
-        }
-        return (true, comments);
-    }
-
-    /// <summary>
     /// Iterate over the folder and place all the valid-files into our files list.
     /// </summary>
     /// <param name="folder">Folder to look through for files</param>
@@ -170,7 +125,6 @@ class LoadProjectFiles{
             }
         }
     }
-
 
     /// <summary>
     /// Called to get all files set-up based on the json config.
@@ -212,15 +166,15 @@ class LoadProjectFiles{
     /// <returns>Tuple of the params that are modified:
     /// multiLineCharacters has the character added
     // comment-count is incremented if there is no code.<string></returns>
-    private (List<string>, int) StartMultiLineComment(List<string> multiLineCharacters, string line, int comments){
+    private (List<string>, int) StartMultiLineComment(List<string> multiLineCharacters, string line, int commentCount){
       for(int i = 0; i < _MultiLineCommentsStart.Count ; i++){
             if (line.Contains(_MultiLineCommentsStart[i])){
                 multiLineCharacters.Add(_MultiLineCommentsEnd[i]);
             }
         }
         if(line.Length == 0)
-            comments++;
-        return (multiLineCharacters, comments);
+            commentCount++;
+        return (multiLineCharacters, commentCount);
     }
 
     /// <summary>
@@ -249,7 +203,6 @@ class LoadProjectFiles{
         return (multiLineCharacters, line, commentCount);
     }
 
-
     /// <summary>
     /// Checks if the line contains, or is an multiLine comment.
     /// We increment the comments counter.
@@ -263,6 +216,51 @@ class LoadProjectFiles{
         (multiLineCharacters, commentCount) = StartMultiLineComment(multiLineCharacters, line, commentCount);
 
         return (multiLineCharacters, line, commentCount);
+    }
+
+    /// <summary>
+    /// Remove the string from a string-line. This is to ensure any commented line within the string is ignored.
+    /// </summary>
+    /// <param name="line"></param>
+    /// <param name="commentChar"></param>
+    /// <returns>modified line where the string is removed (but the string-char is kept).</returns>
+    private string skipStringLine (string line, char stringChar){
+        if(line.Contains(stringChar)){
+            bool isString = false;
+            string newLine = "";
+            for (int i = 0 ; i < line.Length ; i++){
+                if(line[i] == stringChar){
+                    // Skip escape character
+                    if(line[i - 1] == '\\'){
+                        continue;
+                    }
+                    isString = !isString;
+                }else if(!isString){
+                    newLine += line[i];
+                }
+            }
+            line = newLine;
+        }
+        return line;
+    }
+
+    /// <summary>
+    /// Check if the current-line is a commented out line (entire line is commented), or a code-line (may contain a comment, but also contains code).
+    /// If it's a commented-out line, increment the comment count by 1.
+    /// </summary>
+    /// <param name="line">Current line that's been read up</param>
+    /// <param name="commentCount">Counter for content-lines.</param>
+    /// <returns>Wether or not to count the line (boolean), and the commentsCount</returns>
+    private (bool, int) CountLine(string line, int commentCount){
+        line = skipStringLine(line, '"');
+        foreach(string comment in _Comments){
+            if(line.IndexOf(comment) == 0){
+                return (false, commentCount);
+            }else if(line.IndexOf(comment) > 0){
+                return (true, commentCount + 1);
+            }
+        }
+        return (true, commentCount);
     }
 
     /// <summary>
@@ -291,9 +289,6 @@ class LoadProjectFiles{
     /// <param name="sr">The file to be read</param>
     /// <returns>Array of lines counted.</returns>
     private int[] ReadLines(StreamReader sr, int[] allLines){
-        // int codeLines = 0;
-        // int emptyLineCount = 0;
-        // int comments = 0;
         List<string> multiLineCharacters = new List<string>();
         string? line = sr.ReadLine();
         while (line != null){
