@@ -1,8 +1,13 @@
 a
-#||b
-f||#
-; as
-s
+#|| b
 
-s
+#||
+s d
+||#
+
+f ||#
+; as
+ssdsd "string test ; " asd
+
+s   ; asdas
 s

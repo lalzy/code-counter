@@ -1,0 +1,24 @@
+- code until here #||   
+
+#||
+
+||#
+
+||#  - code from here
+
+
+
+multi-line-chars = a list of all multi-line-chars as defined by the .json config.
+multi-line-chars -> list of all multi-char positions.
+
+if multi-line-chars has member:
+    loop through  multi-line-chars as char:
+        if line has char:
+            remove char from multi-line-chars
+            continue to next loop set.
+
+loop through multi-line-chars as char
+    if line has char:
+        add multi-line-char's end-character, to multi-line-chars.
+
+return multi-line-chars

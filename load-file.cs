@@ -1,4 +1,5 @@
 using System.Reflection.PortableExecutable;
+using System.Runtime.CompilerServices;
 
 class LoadProjectFiles{
     private string[] _ProjectPaths;
@@ -114,7 +115,7 @@ class LoadProjectFiles{
     }
 
     /// <summary>
-    /// Check if the current-line is a commented out line, or a code-line.
+    /// Check if the current-line is a commented out line (entire line is commented), or a code-line (may contain a comment, but also contains code).
     /// If it's a commented-out line, increment the comment count by 1.
     /// </summary>
     /// <param name="line">Current line that's been read up</param>
@@ -175,33 +176,66 @@ class LoadProjectFiles{
     }
 
     /// <summary>
-    /// Checks if the line has a start, or end multi-comment symbol, then we check if there's code-lines left, if not.
+    /// Checks if the line contains any start-multi-line comment symbols. If it does, adds it to the multiLineCharacter's list.
+    /// If the entire line is a comment, then increments comment count.
+    /// </summary>
+    /// <param name="multiLineCharacters">Whether or not we're looking for an 'end' symbol</param>
+    /// <param name="line">Current line</param>
+    /// <param name="commentCount">Counter of how many comment-lins have been read.</param>
+    /// <returns>Tuple of the params that are modified:
+    /// multiLineCharacters has the character added
+    // comment-count is incremented if there is no code.<string></returns>
+    private (List<string>, int) StartMultiLineComment(List<string> multiLineCharacters, string line, int comments){
+      for(int i = 0; i < _MultiLineCommentsStart.Count ; i++){
+            if (line.Contains(_MultiLineCommentsStart[i])){
+                multiLineCharacters.Add(_MultiLineCommentsEnd[i]);
+            }
+        }
+        if(line.Length == 0)
+            comments++;
+        return (multiLineCharacters, comments);
+    }
+
+    /// <summary>
+    ///  Checks if the line contains any end-multi-line comment symbols. If it does, remove it from the multiLineCharacter's list.
+    /// If the entire line is a comment, then increments comment count.
+    /// </summary>
+    /// <param name="multiLineCharacters">Whether or not we're looking for an 'end' symbol</param>
+    /// <param name="line">Current line</param>
+    /// <param name="commentCount">Counter of how many comment-lins have been read.</param>
+    /// <returns>Tuple of the params that are modified:
+    /// multiLineCharacters has the character removed.
+    // Line has the comment-symbol removed, 
+    // comment-count is incremented if there is no code.<string></returns>
+    private (List<string>, string, int) EndMultiLineComment(List<string> multiLineCharacters, string line, int commentCount){
+        if(multiLineCharacters.Count > 0){
+            for (int i = 0; i < multiLineCharacters.Count ; i++){
+                if (line.Contains(multiLineCharacters[i])){
+                    line = line.Substring(line.IndexOf(multiLineCharacters[i]));
+                    multiLineCharacters.RemoveAt(i--); // restart the loop at the same position.
+                    continue;
+                }
+            }
+        }
+        if(line.Length == 0)
+            commentCount++;
+        return (multiLineCharacters, line, commentCount);
+    }
+
+
+    /// <summary>
+    /// Checks if the line contains, or is an multiLine comment.
     /// We increment the comments counter.
     /// </summary>
-    /// <param name="multilineComment">Whether or not we're looking for an 'end' symbol</param>
+    /// <param name="multiLineCharacters">Whether or not we're looking for an 'end' symbol</param>
     /// <param name="line">Current line</param>
-    /// <param name="comments">Counter of how many comment-lins have been read.</param>
-    /// <returns></returns>
-    private (bool, string, int) CheckForMultiComment(bool multilineComment, string line, int comments){
-        if(multilineComment){
-            foreach(string commentCharacters in _MultiLineCommentsEnd){
-                if(line.IndexOf(commentCharacters) == 0){
-                    string subString = line.Replace(commentCharacters, "");
-                    return (false,subString, comments);
-                }else{
-                    string subString = line.Substring(line.IndexOf(commentCharacters));
-                    return (false,subString, comments);
-                }
-            }
-            return (true, line, ++comments);
-        }else{
-            foreach(string commentCharacters in _MultiLineCommentsStart){
-                if(line.IndexOf(commentCharacters) >= 0){
-                    return (true,line.Replace(commentCharacters, ""), ++comments);
-                }
-            }
-            return (false, line, comments);
-        }
+    /// <param name="commentCount">Counter of how many comment-lins have been read.</param>
+    /// <returns>Tuple of the parameters (modified by End/StartMultiLineComment, see their documentation for modification details<string></returns>
+    private (List<string>, string, int) CheckForMultiComment(List<string> multiLineCharacters, string line, int commentCount){
+        (multiLineCharacters, line, commentCount) = EndMultiLineComment(multiLineCharacters, line, commentCount);
+        (multiLineCharacters, commentCount) = StartMultiLineComment(multiLineCharacters, line, commentCount);
+
+        return (multiLineCharacters, line, commentCount);
     }
 
     /// <summary>
@@ -233,20 +267,20 @@ class LoadProjectFiles{
         // int codeLines = 0;
         // int emptyLineCount = 0;
         // int comments = 0;
-        bool multilineComment = false;
+        List<string> multiLineCharacters = new List<string>();
         string? line = sr.ReadLine();
         while (line != null){
             line = line.Trim(' ');
 
             // Checks if we're within, or starting a multiline comment
-            (multilineComment, line, allLines[COMMENTED]) = CheckForMultiComment(multilineComment, line, allLines[COMMENTED]);
+            (multiLineCharacters, line, allLines[COMMENTED]) = CheckForMultiComment(multiLineCharacters, line, allLines[COMMENTED]);
 
             // Check if the current line should be counted as code (such as if multi-line comment is on same line as valid-code).
             bool countLine;
             (countLine, allLines[COMMENTED]) = CountLine(line, allLines[COMMENTED]);
 
             // If it's an multi-line comment, we skip this (as it's commented).
-            if(!multilineComment){
+            if(multiLineCharacters.Count == 0){
                 if(line.Length == 0){
                     allLines[WHITESPACE]++;
                 }else if(countLine){
