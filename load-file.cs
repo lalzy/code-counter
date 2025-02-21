@@ -204,8 +204,11 @@ class LoadProjectFiles{
                     int index = line.IndexOf(multiLineCharacters[i]);
                     line = line.Substring(index > 0 ? index+multiLineCharacters[i].Length : index);
                     multiLineCharacters.Remove(multiLineCharacters[i]);
+
+                    // Return a comment character if line would've been empty and increase comment count.
+                    // The comment-character does not get read.
                     if (line.Length == 0){
-                        return (multiLineCharacters, ";", ++commentCount);
+                        return (multiLineCharacters, _Comments[0], ++commentCount);
                     }
                 }
             }
