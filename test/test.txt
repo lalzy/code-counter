@@ -8,7 +8,7 @@ s d
 f |#
 ; as
 
-ssdsd "string test ;
+ssdsd "string test /";
 sd
  " adass
 
