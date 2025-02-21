@@ -12,6 +12,13 @@ class LoadProjectFiles{
     private List<string> _MultiLineCommentsEnd = new List<string>();
     
     /// <summary>
+    ///  Constants for easy printing of the array.
+    /// </summary>
+    private  const int CODELINE = 0;
+    private  const int WHITESPACE = 1;
+    private  const int COMMENTED = 2;
+    private const int TOTALLINES = 3;
+    /// <summary>
     /// Initialize the configData, and gets the path that'll be used to go through the files.
     /// </summary>
     /// <param name="projectPaths">Either a file, or directory that'll be used for counting lines</param>
@@ -197,6 +204,9 @@ class LoadProjectFiles{
                     int index = line.IndexOf(multiLineCharacters[i]);
                     line = line.Substring(index > 0 ? index+multiLineCharacters[i].Length : index);
                     multiLineCharacters.Remove(multiLineCharacters[i]);
+                    if (line.Length == 0){
+                        return (multiLineCharacters, ";", ++commentCount);
+                    }
                 }
             }
             if(line.Length == 0){
@@ -267,13 +277,6 @@ class LoadProjectFiles{
     }
 
     /// <summary>
-    ///  Constants for easy printing of the array.
-    /// </summary>
-    private  const int CODELINE = 0;
-    private  const int WHITESPACE = 1;
-    private  const int COMMENTED = 2;
-
-    /// <summary>
     /// Prints out the counted lines.
     /// </summary>
     public void PrintOut(){
@@ -282,7 +285,7 @@ class LoadProjectFiles{
                           $"Commented Lines:{lines[COMMENTED]}\n"+
                           $"Code Lines: {lines[CODELINE]}\n"+
                           "------------------------\n"+
-                          $"Total Lines:{lines[WHITESPACE] + lines[COMMENTED] + lines[CODELINE]}");
+                          $"Total Lines:{lines[TOTALLINES]}");
     }
 
     /// <summary>
@@ -295,6 +298,7 @@ class LoadProjectFiles{
         char? storedChar = null;
         string? line = sr.ReadLine();
         while (line != null){
+            allLines[TOTALLINES]++;
             line = line.Trim(' ');
             // Checks if we're within, or starting a multiline comment
             (multiLineCharacters, line, allLines[COMMENTED]) = CheckForMultiComment(multiLineCharacters, line, allLines[COMMENTED]);
@@ -324,7 +328,7 @@ class LoadProjectFiles{
     /// </summary>
     /// <returns>Array of lines counted.</returns>
     public int[] GetLines(){
-        int[] allLines = new int[5];
+        int[] allLines = new int[4];
         foreach (FileInfo file in _Files){
             try{
                 using (StreamReader sr = new StreamReader(file.FullName)) {
